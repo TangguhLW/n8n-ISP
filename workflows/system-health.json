@@ -1,0 +1,11 @@
+{
+  "name": "ATH - System Health Monitor",
+  "nodes": [
+    {"id":"schedule","name":"Setiap menit","type":"n8n-nodes-base.scheduleTrigger","typeVersion":1.2,"position":[0,0],"parameters":{"rule":{"interval":[{"field":"minutes","minutesInterval":1}]}}},
+    {"id":"check","name":"Readiness database n8n","type":"n8n-nodes-base.httpRequest","typeVersion":4.2,"position":[260,0],"parameters":{"url":"http://127.0.0.1:5678/healthz/readiness","options":{"timeout":8000}},"retryOnFail":true,"maxTries":3,"waitBetweenTries":3000}
+  ],
+  "connections":{"Setiap menit":{"main":[[{"node":"Readiness database n8n","type":"main","index":0}]]}},
+  "settings":{"timezone":"Asia/Jakarta","executionOrder":"v1"},
+  "active":false,
+  "pinData":{}
+}

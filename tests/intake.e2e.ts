@@ -1,0 +1,20 @@
+import { test, expect } from '@playwright/test';
+test('feed configuration, retry/cancel, standalone video and rights review',async({page})=>{
+  await page.goto('/');await page.getByLabel('Password lokal').fill('browser-test-password');await page.getByRole('button',{name:'Masuk',exact:true}).click();await expect(page.getByRole('heading',{level:1,name:'Overview'})).toBeVisible();
+  await page.getByRole('navigation').getByRole('button',{name:'Legal Intelligence'}).click();
+  const feed=page.locator('section').filter({has:page.getByRole('heading',{name:'Feed resmi',exact:true})});
+  await feed.getByLabel('Nama sumber').fill('TEST ONLY disabled feed');await feed.getByLabel('URL RSS / Atom resmi').fill('https://www.mkri.id/test-only-feed');await feed.getByLabel('Akses feed ini sesuai').check();await feed.getByRole('button',{name:'Tambahkan feed'}).click();
+  await feed.getByRole('button',{name:'Jeda feed'}).click();await expect(feed.getByRole('button',{name:'Aktifkan feed'})).toBeVisible();
+  await feed.getByRole('button',{name:'Aktifkan feed'}).click();await expect(feed.getByRole('button',{name:'Jeda feed'})).toBeVisible();await feed.getByRole('button',{name:'Jeda feed'}).click();await expect(feed.getByRole('button',{name:'Aktifkan feed'})).toBeVisible();
+  await page.getByRole('button',{name:'Jalankan riset feed'}).click();let state=await(await page.request.get('/api/state')).json();const research=state.jobs.find((j:any)=>j.type==='LEGAL_RESEARCH');expect(research.status).toBe('FAILED');
+  await page.getByRole('navigation').getByRole('button',{name:'Job Queue'}).click();await page.getByLabel('Filter status job').selectOption('FAILED');await page.getByRole('button',{name:research.id.slice(0,8),exact:true}).click();page.once('dialog',d=>d.accept());await page.getByRole('button',{name:'Retry manual',exact:true}).click();await expect(page.getByText('NEEDS_CONFIGURATION',{exact:false}).first()).toBeVisible();
+  await page.getByRole('navigation').getByRole('button',{name:'TikTok Automation'}).click();
+  await page.getByLabel('Caption berdasarkan isi video').fill('TEST ONLY file intake');await page.getByRole('button',{name:'Simpan intake'}).click();state=await(await page.request.get('/api/state')).json();const video=state.videos.find((v:any)=>v.caption==='TEST ONLY file intake');expect(video.url).toBeNull();await page.getByRole('button',{name:video.id.slice(0,8),exact:true}).click();
+  await page.getByLabel('Bukti izin yang telah diperiksa').fill('TEST ONLY ownership declaration');await page.getByLabel('Saya telah memeriksa hak penggunaan').check();await page.getByRole('button',{name:'Simpan pemeriksaan izin'}).click();await expect(page.getByText('Perlu file sah',{exact:true}).first()).toBeVisible();
+  const invalid=Buffer.from('000000186674797069736f6d0000000069736f6d6d703432','hex');
+  await page.getByLabel('File video sah MP4').setInputFiles({name:'test-only-invalid.mp4',mimeType:'video/mp4',buffer:invalid});await page.getByRole('button',{name:'Impor dan periksa metadata'}).click();
+  await expect.poll(async()=>{const data=await(await page.request.get('/api/state')).json();return data.videos.find((v:any)=>v.id===video.id).metadata.status;}).not.toBe('NEEDS_FILE');
+  state=await(await page.request.get('/api/state')).json();const latest=state.videos.find((v:any)=>v.id===video.id);expect(['NEEDS_FFMPEG','VALIDATION_FAILED']).toContain(latest.metadata.status);expect(latest.approval).toBeNull();
+  const downloadPromise=page.waitForEvent('download');await page.getByRole('link',{name:'Ekspor paket video'}).click();expect((await downloadPromise).suggestedFilename()).toMatch(/\.zip$/);
+  await page.getByRole('navigation').getByRole('button',{name:'Job Queue'}).click();await page.getByLabel('Filter status job').selectOption('WAITING_FOR_APPROVAL');await page.getByRole('button',{name:video.jobId.slice(0,8),exact:true}).click();page.once('dialog',d=>d.accept());await page.getByRole('button',{name:'Batalkan job',exact:true}).click();await expect(page.getByText('CANCELLED',{exact:true}).first()).toBeVisible();
+});

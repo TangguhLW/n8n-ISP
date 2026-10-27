@@ -1,0 +1,11 @@
+{
+  "name": "ATH - Nomor Grup Pilihan ke Excel",
+  "nodes": [
+    {"id":"manual","name":"Ambil sekarang","type":"n8n-nodes-base.manualTrigger","typeVersion":1,"position":[0,0],"parameters":{}},
+    {"id":"schedule","name":"Setiap jam setelah dipasangkan","type":"n8n-nodes-base.scheduleTrigger","typeVersion":1.2,"position":[0,180],"parameters":{"rule":{"interval":[{"field":"hours","hoursInterval":1}]}}},
+    {"id":"collect","name":"Mulai ekspor lokal ATH","type":"n8n-nodes-base.httpRequest","typeVersion":4.2,"position":[300,80],"parameters":{"method":"POST","url":"http://host.docker.internal:3000/api/whatsapp/sync","authentication":"genericCredentialType","genericAuthType":"httpHeaderAuth","options":{"timeout":100000}},"credentials":{"httpHeaderAuth":{"id":"athWhatsAppLocalCsv","name":"ATH WhatsApp local export"}}}
+  ],
+  "connections":{"Ambil sekarang":{"main":[[{"node":"Mulai ekspor lokal ATH","type":"main","index":0}]]},"Setiap jam setelah dipasangkan":{"main":[[{"node":"Mulai ekspor lokal ATH","type":"main","index":0}]]}},
+  "settings":{"timezone":"Asia/Bangkok","executionOrder":"v1","saveDataSuccessExecution":"none","saveDataErrorExecution":"all"},
+  "active":false
+}

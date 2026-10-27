@@ -1,0 +1,29 @@
+name: ath-whatsapp
+services:
+  waha:
+    image: devlikeapro/waha:latest-2026.9.2@sha256:280bdc8f860267a2488a45d00ec88529646f7468c0bf0283c595d6efdd1b5e3b
+    container_name: ath-whatsapp
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3002:3000"
+    environment:
+      WAHA_API_KEY: "sha512:${WAHA_API_KEY_HASH}"
+      WAHA_DASHBOARD_USERNAME: admin
+      WAHA_DASHBOARD_PASSWORD: ${WAHA_DASHBOARD_PASSWORD}
+      WHATSAPP_SWAGGER_USERNAME: admin
+      WHATSAPP_SWAGGER_PASSWORD: ${WAHA_DASHBOARD_PASSWORD}
+      WHATSAPP_DEFAULT_ENGINE: WEBJS
+      WAHA_API_DOWNLOAD_MEDIA: "false"
+      WHATSAPP_RESTART_ALL_SESSIONS: "true"
+      TZ: Asia/Bangkok
+    volumes:
+      - whatsapp_sessions:/app/.sessions
+    shm_size: 256mb
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "2"
+volumes:
+  whatsapp_sessions:
+    name: ath_whatsapp_sessions

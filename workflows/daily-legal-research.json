@@ -1,0 +1,14 @@
+{
+  "name": "ATH - Daily Legal Research - Configure Feed First",
+  "nodes": [
+    {"id":"schedule","name":"Setiap hari 08.00 Jakarta","type":"n8n-nodes-base.scheduleTrigger","typeVersion":1.2,"position":[0,0],"parameters":{"rule":{"interval":[{"field":"cronExpression","expression":"0 8 * * *"}]}}},
+    {"id":"config","name":"Konfigurasi feed resmi","type":"n8n-nodes-base.set","typeVersion":3.4,"position":[250,0],"parameters":{"assignments":{"assignments":[{"id":"feed","name":"feedUrl","type":"string","value":""}]},"options":{}}},
+    {"id":"gate","name":"Feed sudah diisi","type":"n8n-nodes-base.if","typeVersion":2.2,"position":[500,0],"parameters":{"conditions":{"options":{"caseSensitive":true,"leftValue":"","typeValidation":"strict","version":2},"conditions":[{"id":"gate-cond","leftValue":"={{ $json.feedUrl }}","rightValue":"","operator":{"type":"string","operation":"notEmpty","singleValue":true}}],"combinator":"and"},"options":{}}},
+    {"id":"read","name":"Baca kandidat RSS","type":"n8n-nodes-base.rssFeedRead","typeVersion":1.1,"position":[760,-80],"parameters":{"url":"={{ $json.feedUrl }}","options":{}},"retryOnFail":true,"maxTries":2,"waitBetweenTries":3000},
+    {"id":"stop","name":"Sumber belum dikonfigurasi","type":"n8n-nodes-base.stopAndError","typeVersion":1,"position":[760,100],"parameters":{"errorMessage":"NEEDS_CONFIGURATION: isi feed resmi yang aksesnya diizinkan. Pipeline kandidat ini belum terhubung ke dashboard atau verifikasi hukum."}}
+  ],
+  "connections":{"Setiap hari 08.00 Jakarta":{"main":[[{"node":"Konfigurasi feed resmi","type":"main","index":0}]]},"Konfigurasi feed resmi":{"main":[[{"node":"Feed sudah diisi","type":"main","index":0}]]},"Feed sudah diisi":{"main":[[{"node":"Baca kandidat RSS","type":"main","index":0}],[{"node":"Sumber belum dikonfigurasi","type":"main","index":0}]]}},
+  "settings":{"timezone":"Asia/Jakarta","executionOrder":"v1"},
+  "active":false,
+  "pinData":{}
+}

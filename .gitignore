@@ -1,0 +1,25 @@
+node_modules/
+.next/
+.env
+.env.local
+.env.ath-tmp
+.npm-cache/
+data/
+outputs/
+logs/
+backups/
+test-results/
+playwright-report/
+*.tsbuildinfo
+next-env.d.ts
+
+# Local secrets and generated artifacts
+.env
+.env.local
+.env.*.local
+*.jks
+*.keystore
+*.p12
+*.pem
+*.key
+node_modules/
